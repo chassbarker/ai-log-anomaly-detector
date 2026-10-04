@@ -2,9 +2,22 @@
 
 A Python machine learning pipeline that helps prioritize unusual system logs for investigation. It converts raw log entries into numeric features, uses **Isolation Forest** to detect outliers, then applies separate **rule-based severity classification** and exports reviewable CSV results plus a JSON run summary.
 
-**Stack:** Python, NumPy, scikit-learn, pytest, GitHub Actions.
+**Stack:** Python, NumPy, scikit-learn, Streamlit, pytest, GitHub Actions.
 
-Built to explore a practical software operations problem: finding unusual activity in a stream of routine application events. The included sample contains API requests, login activity, health checks, and operational warnings. This is a local batch prototype with synthetic data.
+Built to explore a practical software operations problem: finding unusual activity in a stream of routine application events. The included sample contains API requests, login activity, health checks, and operational warnings. The project includes both a command-line pipeline and a recruiter-friendly Streamlit demo using synthetic data.
+
+## Interactive demo
+
+Run the web demo locally:
+
+```bash
+python -m pip install -r requirements.txt
+streamlit run streamlit_app.py
+```
+
+The demo lets users analyze the included sample, paste logs, or upload a UTF-8 `.txt`/`.log` file. It displays run statistics and flagged entries, exposes the contamination and decision-threshold settings, and provides CSV and JSON downloads.
+
+To publish it on Streamlit Community Cloud, deploy this repository with `streamlit_app.py` as the entrypoint. After deployment, add the public `streamlit.app` URL here and to the repository website field.
 
 ## Quick start
 
@@ -111,11 +124,13 @@ Tests cover feature values, empty features, severity priority, Unicode and blank
 | Path | Purpose |
 |---|---|
 | `detect.py` | Feature extraction, detection, severity, export, and CLI |
+| `streamlit_app.py` | Interactive portfolio demo for sample, pasted, or uploaded logs |
 | `sample_logs.txt` | Synthetic demonstration input |
 | `anomalies.csv` | Example detected events |
 | `examples/summary.json` | Example run statistics |
-| `tests/test_detect.py` | Automated behavior tests |
-| `.github/workflows/tests.yml` | CI test matrix and sample smoke run |
+| `tests/test_detect.py` | Automated detector and CLI tests |
+| `tests/test_streamlit_demo.py` | Demo input and CSV helper tests |
+| `.github/workflows/tests.yml` | CI test matrix, demo validation, and sample smoke run |
 | `requirements.txt` | Runtime dependencies |
 | `requirements-dev.txt` | Runtime dependencies plus pytest |
 | `img/` | Original portfolio visuals |

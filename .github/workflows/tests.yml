@@ -18,5 +18,7 @@ jobs:
           cache: pip
       - run: python -m pip install -r requirements-dev.txt
       - run: python -m pytest -q
+      - name: Compile Streamlit demo
+        run: python -m py_compile streamlit_app.py
       - name: Run sample pipeline
         run: python detect.py --output /tmp/anomalies.csv --summary /tmp/summary.json

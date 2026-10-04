@@ -1,0 +1,5 @@
+severity,anomaly_score,log_entry
+MEDIUM,-0.03,2026-10-03 09:15:17 WARNING High CPU usage detected host=app-02 cpu=91%
+HIGH,-0.0173,2026-10-03 09:16:23 ERROR Failed login attempt user=admin ip=203.0.113.77
+HIGH,-0.0726,2026-10-03 09:17:41 CRITICAL Unauthorized access denied resource=/admin source=198.51.100.8
+MEDIUM,-0.0585,2026-10-03 09:18:55 WARNING Request timeout endpoint=/api/orders duration=12000ms

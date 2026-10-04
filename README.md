@@ -1,68 +1,126 @@
 # AI Log Anomaly Detector
 
-A lightweight Python machine learning project that analyzes system log entries and detects unusual activity using IsolationForest.
+A Python machine learning pipeline that helps prioritize unusual system logs for investigation. It converts raw log entries into numeric features, uses **Isolation Forest** to detect outliers, then applies separate **rule-based severity classification** and exports reviewable CSV results plus a JSON run summary.
 
-The project also assigns a severity level to detected anomalies so unusual events can be prioritized for review.
+**Stack:** Python, NumPy, scikit-learn, pytest, GitHub Actions.
 
-![AI Log Anomaly Detection Pipeline](img/ai-log-anomaly-detection-pipeline.png)
+Built to explore a practical software operations problem: finding unusual activity in a stream of routine application events. The included sample contains API requests, login activity, health checks, and operational warnings. This is a local batch prototype with synthetic data.
 
-## Features
+## Quick start
 
-- Detects unusual log activity using IsolationForest
-- Extracts numeric features from raw log entries
-- Assigns HIGH, MEDIUM, or LOW severity levels
-- Generates an anomaly score for each detected event
-- Saves detected anomalies to a CSV file
-- Uses a small, easy-to-understand Python codebase
+Use Python 3.11 or 3.12. From the repository directory:
 
-## Technologies
+```bash
+python -m venv .venv
+```
 
-- Python
-- NumPy
-- scikit-learn
-- IsolationForest
-- CSV
+Activate the environment:
 
-## How It Works
+```bash
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
 
-The project uses two separate steps.
+# macOS or Linux
+source .venv/bin/activate
+```
 
-### 1. Anomaly Detection
+Install and run:
 
-Each log entry is converted into numeric features such as:
+```bash
+python -m pip install -r requirements.txt
+python detect.py
+```
 
-- Log entry length
-- Ratio of numbers
-- Ratio of uppercase characters
-- Number of alert-related keywords
-- Number of structured fields
-- Number of URL or file path characters
+Default outputs are `anomalies.csv` and `summary.json`.
 
-IsolationForest analyzes these features and identifies log entries whose patterns differ from the majority of the data.
+```bash
+python detect.py --input sample_logs.txt --output results.csv --summary run.json --contamination 0.10
+python detect.py --contamination auto --threshold -0.02
+python detect.py --help
+```
 
-### 2. Severity Scoring
+Input must be UTF-8 text with at least five non-empty entries, one per line. Blank lines are skipped. Output directories must already exist. Input, CSV, and summary paths must differ. Invalid settings, missing files, and insufficient input return a nonzero exit status.
 
-After an anomaly is detected, a rule-based function assigns a severity level.
+## Pipeline
 
-- HIGH: Error, failed, denied, unauthorized, or critical activity
-- MEDIUM: Warning or timeout activity
-- LOW: Other unusual activity
+```mermaid
+flowchart TD
+    A["Log file"] --> B["Load and validate entries"]
+    B --> C["Extract six numeric features"]
+    C --> D["Fit Isolation Forest and score entries"]
+    D --> E["Select scores below threshold"]
+    E --> F["Apply severity rules"]
+    F --> G["CSV anomalies and JSON summary"]
+```
 
-The machine learning model determines whether an event is unusual.
+### Features and severity
 
-The severity logic determines how the detected event should be prioritized.
+Each entry becomes six features: length, digit ratio, uppercase ratio, alert-keyword occurrence count, equals-sign count, and slash count. The keyword feature counts substring occurrences; overlapping terms such as `WARN` and `WARNING` can both contribute. Equals signs and slashes are simple proxies for structured fields and paths, rather than a full log parser.
 
-## Project Structure
+The model identifies unusual feature patterns. Only selected anomalies receive a severity:
 
-```text
-ai-log-anomaly-detector/
-│
-├── img/
-│   ├── ai-log-anomaly-detection-pipeline.png
-│   └── ai-log-anomaly-detector-vscode.png
-├── detect.py
-├── sample_logs.txt
-├── requirements.txt
-├── .gitignore
-├── anomalies.csv
-└── README.md
+| Severity | Case-insensitive keyword rules |
+|---|---|
+| HIGH | ERROR, FAILED, DENIED, UNAUTHORIZED, CRITICAL |
+| MEDIUM | WARNING, WARN, TIMEOUT, if no HIGH keyword matches |
+| LOW | No severity keyword matches |
+
+Severity is a rule-based review priority, not a learned prediction or a security verdict.
+
+## Example results
+
+With the included 20-entry sample, default settings, Python 3.12, and scikit-learn 1.8.0:
+
+| Run statistic | Result |
+|---|---:|
+| Logs analyzed | 20 |
+| Anomalies detected | 4 |
+| Anomaly percentage | 20% |
+| HIGH / MEDIUM / LOW | 2 / 2 / 0 |
+| Selected decision-score range | -0.0726 to -0.0173 |
+
+See [example CSV](anomalies.csv) and [example JSON summary](examples/summary.json). The summary also records contamination, decision threshold, and random seed. Scores in exported results are rounded to four decimals; selection uses full-precision values.
+
+These are run statistics, not accuracy measurements. The sample has no independently validated labels. For example, the database failure entry is not selected at the default cutoff, illustrating that unusualness and importance are different. Results may change across library versions.
+
+## Engineering decisions
+
+- **Isolation Forest:** useful for an unsupervised baseline when labeled incidents are unavailable. It isolates unusual numeric patterns without needing a classifier trained on incident labels.
+- **Explicit feature extraction:** keeps the prototype small and makes the inputs inspectable. It does not understand log semantics, event sequences, or numeric field values such as latency.
+- **Configurable contamination:** `0.20` preserves the original demonstration setting. Numeric values must be in `(0, 0.5]`; `auto` uses the model's automatic offset. This is a cutoff assumption, not measured incident prevalence. Real workloads require tuning.
+- **Configurable decision threshold:** flag entries with `decision_function < threshold`. The default is zero; lower values select fewer entries. These scores are not probabilities. Changing contamination also changes the decision-score offset.
+- **Repeatable runs:** 200 trees and `random_state=42` make runs repeatable with the same input and environment.
+- **Separate severity logic:** keeps ML unusualness distinct from keyword-based business priority.
+- **CSV and JSON:** support manual review and downstream scripts without adding a service deployment.
+
+The batch is used both to fit the model and detect outliers. This is not held-out evaluation or a model trained on a separate normal baseline. The five-entry minimum is an input guard, not evidence of sufficient training data. Duplicate patterns, dataset composition, and substring matches can cause missed incidents or false alarms.
+
+A future evaluation would use independently labeled logs, a separate training baseline and validation set, and precision/recall measurements with thresholds selected on validation data. This project currently makes no production reliability or accuracy claim.
+
+## Tests and CI
+
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+```
+
+Tests cover feature values, empty features, severity priority, Unicode and blank input handling, invalid data and settings, reproducibility, threshold selection, CSV escaping, summary consistency, CLI output, and failure exit codes. GitHub Actions runs tests and the sample pipeline on Python 3.11 and 3.12 for pushes and pull requests.
+
+## Files
+
+| Path | Purpose |
+|---|---|
+| `detect.py` | Feature extraction, detection, severity, export, and CLI |
+| `sample_logs.txt` | Synthetic demonstration input |
+| `anomalies.csv` | Example detected events |
+| `examples/summary.json` | Example run statistics |
+| `tests/test_detect.py` | Automated behavior tests |
+| `.github/workflows/tests.yml` | CI test matrix and sample smoke run |
+| `requirements.txt` | Runtime dependencies |
+| `requirements-dev.txt` | Runtime dependencies plus pytest |
+| `img/` | Original portfolio visuals |
+
+## References
+
+- [scikit-learn Isolation Forest documentation](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html)
+- [scikit-learn outlier detection guide](https://scikit-learn.org/stable/modules/outlier_detection.html)

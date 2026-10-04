@@ -1,0 +1,19 @@
+{
+  "logs_analyzed": 20,
+  "anomalies_detected": 4,
+  "anomaly_percentage": 20.0,
+  "severity_counts": {
+    "HIGH": 2,
+    "MEDIUM": 2,
+    "LOW": 0
+  },
+  "anomaly_score_range": {
+    "min": -0.0726,
+    "max": -0.0173
+  },
+  "settings": {
+    "contamination": 0.2,
+    "threshold": 0.0,
+    "random_state": 42
+  }
+}

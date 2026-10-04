@@ -1,0 +1,20 @@
+2026-10-03 09:00:01 INFO User login successful user=jsmith ip=10.0.0.21
+2026-10-03 09:01:14 INFO Health check passed service=api
+2026-10-03 09:02:10 INFO GET /api/products status=200 duration=42ms
+2026-10-03 09:03:33 INFO User logout successful user=jsmith
+2026-10-03 09:04:02 INFO Database connection established pool=main
+2026-10-03 09:05:18 INFO GET /api/orders status=200 duration=51ms
+2026-10-03 09:06:44 INFO Cache refresh completed items=124
+2026-10-03 09:07:21 INFO POST /api/cart status=201 duration=63ms
+2026-10-03 09:08:03 INFO Worker heartbeat received worker=3
+2026-10-03 09:09:46 INFO GET /api/profile status=200 duration=38ms
+2026-10-03 09:10:12 INFO Scheduled task completed task=cleanup
+2026-10-03 09:11:09 INFO Health check passed service=database
+2026-10-03 09:12:50 INFO GET /api/products status=200 duration=45ms
+2026-10-03 09:13:37 INFO User login successful user=agarcia ip=10.0.0.34
+2026-10-03 09:14:58 INFO Queue message processed id=83921
+2026-10-03 09:15:17 WARNING High CPU usage detected host=app-02 cpu=91%
+2026-10-03 09:16:23 ERROR Failed login attempt user=admin ip=203.0.113.77
+2026-10-03 09:17:41 CRITICAL Unauthorized access denied resource=/admin source=198.51.100.8
+2026-10-03 09:18:55 WARNING Request timeout endpoint=/api/orders duration=12000ms
+2026-10-03 09:19:31 ERROR Database connection failed retries=5

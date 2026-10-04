@@ -59,14 +59,11 @@ ai-log-anomaly-detector/
 ├── sample_logs.txt
 ├── requirements.txt
 ├── .gitignore
+├── anomalies.csv
 └── README.md
 ```
 
-After the program runs, it also creates:
-
-```text
-anomalies.csv
-```
+`anomalies.csv` is included as sample generated output so the results can be reviewed without running the project first. Running `detect.py` regenerates the file.
 
 ## Installation
 

@@ -147,7 +147,7 @@ def main():
                     for index, anomaly in enumerate(anomalies, start=1):
                         detail_col1, detail_col2 = st.columns([1, 4])
                         detail_col1.markdown(
-                            f"**{index}. {anomaly['severity']}**  \\n"
+                            f"**{index}. {anomaly['severity']}**  \n"
                             f"Score: `{anomaly['anomaly_score']:.4f}`"
                         )
                         with detail_col2:

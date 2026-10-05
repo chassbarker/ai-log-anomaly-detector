@@ -123,6 +123,14 @@ python -m pytest -q
 
 Tests cover feature values, empty features, severity priority, Unicode and blank input handling, invalid data and settings, reproducibility, threshold selection, CSV escaping, summary consistency, CLI output, and failure exit codes. GitHub Actions runs tests and the sample pipeline on Python 3.11 and 3.12 for pushes and pull requests.
 
+## Security
+
+- **CodeQL** scans Python changes for security issues on pushes and pull requests to `main`, plus a weekly scheduled scan.
+- **Dependabot** checks Python packages and GitHub Actions weekly and opens dependency update pull requests.
+- The Streamlit demo accepts text-only `.txt` and `.log` uploads, limits uploads to 1 MB and 5,000 entries, and does not execute uploaded content.
+- Use synthetic or non-sensitive logs in the public demo. Do not upload credentials, tokens, personal data, production logs, or confidential information.
+- See [SECURITY.md](SECURITY.md) for responsible vulnerability reporting.
+
 ## Files
 
 | Path | Purpose |

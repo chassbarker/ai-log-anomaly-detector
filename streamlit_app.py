@@ -121,7 +121,43 @@ def main():
 
             st.subheader("Flagged log entries")
             if anomalies:
-                st.dataframe(anomalies, use_container_width=True, hide_index=True)
+                st.dataframe(
+                    anomalies,
+                    width="stretch",
+                    hide_index=True,
+                    column_order=["severity", "anomaly_score", "log_entry"],
+                    column_config={
+                        "severity": st.column_config.TextColumn(
+                            "Severity",
+                            width="small",
+                        ),
+                        "anomaly_score": st.column_config.NumberColumn(
+                            "Anomaly score",
+                            format="%.4f",
+                            width="small",
+                        ),
+                        "log_entry": st.column_config.TextColumn(
+                            "Log entry",
+                            width="large",
+                        ),
+                    },
+                )
+
+                with st.expander("View full flagged log details"):
+                    for index, anomaly in enumerate(anomalies, start=1):
+                        detail_col1, detail_col2 = st.columns([1, 4])
+                        detail_col1.markdown(
+                            f"**{index}. {anomaly['severity']}**  \n"
+                            f"Score: `{anomaly['anomaly_score']:.4f}`"
+                        )
+                        with detail_col2:
+                            st.code(
+                                anomaly["log_entry"],
+                                language=None,
+                                wrap_lines=True,
+                                height="content",
+                                width="stretch",
+                            )
             else:
                 st.success("No log entries fell below the selected decision threshold.")
 

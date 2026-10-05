@@ -19,6 +19,12 @@ streamlit run streamlit_app.py
 
 The demo lets users analyze the included sample, paste logs, or upload a UTF-8 `.txt`/`.log` file. It displays run statistics and flagged entries, exposes the contamination and decision-threshold settings, and provides CSV and JSON downloads.
 
+### Demo preview
+
+[![AI Log Anomaly Detector Streamlit demo showing log input controls and analysis metrics](img/AI%20Log%20Anomaly%20Detector%20Dashboard.png)](https://chass-ai-log-anomaly-detector.streamlit.app/)
+
+*Streamlit interface for analyzing system logs, detecting anomalies with Isolation Forest, and prioritizing flagged events by severity.*
+
 **Live app:** https://chass-ai-log-anomaly-detector.streamlit.app/
 
 The public demo is deployed on Streamlit Community Cloud from `streamlit_app.py` and updates from the `main` branch.
@@ -145,7 +151,7 @@ Tests cover feature values, empty features, severity priority, Unicode and blank
 | `.github/workflows/tests.yml` | CI test matrix, demo validation, and sample smoke run |
 | `requirements.txt` | Runtime dependencies |
 | `requirements-dev.txt` | Runtime dependencies plus pytest |
-| `img/` | Original portfolio visuals |
+| `img/` | Project architecture and demo visuals |
 
 ## References
 

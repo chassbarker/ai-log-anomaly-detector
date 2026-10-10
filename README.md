@@ -4,7 +4,7 @@
 
 A Python machine learning pipeline that helps prioritize unusual system logs for investigation. It converts raw log entries into numeric features, uses **Isolation Forest** to detect outliers, then applies separate **rule-based severity classification** and exports reviewable CSV results plus a JSON run summary.
 
-**Stack:** Python, NumPy, scikit-learn, Streamlit, pytest, GitHub Actions.
+**Stack:** Python, NumPy, scikit-learn, Streamlit, pytest, GitHub Actions, Docker.
 
 Built to explore a practical software operations problem: finding unusual activity in a stream of routine application events. The included sample contains API requests, login activity, health checks, and operational warnings. The project includes both a command-line pipeline and a recruiter-friendly Streamlit demo using synthetic data.
 
@@ -28,6 +28,61 @@ The demo lets users analyze the included sample, paste logs, or upload a UTF-8 `
 **Live app:** https://chass-ai-log-anomaly-detector.streamlit.app/
 
 The public demo is deployed on Streamlit Community Cloud from `streamlit_app.py` and updates from the `main` branch.
+
+## Run with Docker
+
+Docker packages the Python runtime, application dependencies, and synthetic sample
+logs into one image. Install and start Docker Desktop (Linux containers on
+Windows), then open a terminal in this repository.
+
+Check that the Docker engine is available:
+
+```bash
+docker version
+```
+
+Build the image and start the dashboard:
+
+```bash
+docker build -t log-anomaly-detector .
+docker run --rm --name anomaly-dashboard -p 127.0.0.1:8501:8501 log-anomaly-detector
+```
+
+Open http://localhost:8501. Select **Sample logs**, click **Analyze logs**, and
+verify that flagged events appear and the CSV and JSON downloads work. Press
+**Ctrl+C** in the terminal to stop the dashboard. The container is removed on exit.
+
+While the dashboard is running, use a second terminal to inspect it:
+
+```bash
+docker ps
+docker logs anomaly-dashboard
+docker inspect --format='{{.State.Health.Status}}' anomaly-dashboard
+```
+
+The health status may start as `starting`; allow up to a minute for it to become
+`healthy`. The health check verifies that the Streamlit server responds, not
+the accuracy of anomaly detection.
+
+You can also run the command-line detector in a temporary container:
+
+```bash
+docker run --rm log-anomaly-detector python detect.py --output /tmp/anomalies.csv --summary /tmp/summary.json
+```
+
+This prints detection statistics. These output files exist only inside that
+temporary container and are removed when it exits; use the dashboard downloads
+to save results to your computer.
+
+The image runs as a non-root user, copies only required runtime files, disables
+Streamlit usage telemetry, and binds the published port to your local computer.
+It requires no AWS credentials. Docker support does not change the public
+Streamlit Community Cloud deployment.
+
+GitHub Actions builds the image, runs the sample CLI pipeline, and checks dashboard
+readiness in the **Docker smoke test** workflow. To document your own hands-on
+verification, capture Docker Desktop showing the running container and the local
+dashboard after analyzing sample logs.
 
 ## Quick start
 
@@ -149,6 +204,9 @@ Tests cover feature values, empty features, severity priority, Unicode and blank
 | `tests/test_detect.py` | Automated detector and CLI tests |
 | `tests/test_streamlit_demo.py` | Demo input and CSV helper tests |
 | `.github/workflows/tests.yml` | CI test matrix, demo validation, and sample smoke run |
+| `Dockerfile` | Non-root container image for the dashboard and CLI |
+| `.dockerignore` | Restricts the Docker build context to runtime files |
+| `.github/workflows/docker.yml` | Container build, CLI smoke run, and dashboard health check |
 | `requirements.txt` | Runtime dependencies |
 | `requirements-dev.txt` | Runtime dependencies plus pytest |
 | `img/` | Project architecture and demo visuals |

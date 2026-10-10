@@ -45,14 +45,14 @@ Build the image and start the dashboard:
 
 ```bash
 docker build -t log-anomaly-detector .
-docker run --rm --name anomaly-dashboard -p 127.0.0.1:8501:8501 log-anomaly-detector
+docker run -d --name anomaly-dashboard -p 127.0.0.1:8501:8501 log-anomaly-detector
 ```
 
-Open http://localhost:8501. Select **Sample logs**, click **Analyze logs**, and
-verify that flagged events appear and the CSV and JSON downloads work. Press
-**Ctrl+C** in the terminal to stop the dashboard. The container is removed on exit.
+Open [http://localhost:8501](http://localhost:8501). Select **Sample logs**, click **Analyze logs**, and
+verify that flagged events appear and the CSV and JSON downloads work.
+The dashboard runs in the background; the named container is retained for reuse.
 
-While the dashboard is running, use a second terminal to inspect it:
+Inspect the running container:
 
 ```bash
 docker ps
@@ -80,9 +80,31 @@ It requires no AWS credentials. Docker support does not change the public
 Streamlit Community Cloud deployment.
 
 GitHub Actions builds the image, runs the sample CLI pipeline, and checks dashboard
-readiness in the **Docker smoke test** workflow. To document your own hands-on
-verification, capture Docker Desktop showing the running container and the local
-dashboard after analyzing sample logs.
+readiness in the **Docker smoke test** workflow.
+
+Stop the dashboard when finished, or restart the existing container later:
+
+```bash
+docker stop anomaly-dashboard
+docker start anomaly-dashboard
+```
+
+Run `docker start` to reuse an existing container instead of repeating `docker run`
+with the same name.
+
+### Local Docker verification
+
+Verified locally on Windows with Docker Desktop: built the image, started the
+dashboard container, confirmed its `healthy` status, analyzed sample logs in the
+browser, and downloaded CSV results.
+
+![PowerShell showing the completed Docker image build and healthy dashboard container](img/docker-build-and-healthy-container.jpg)
+
+*Successful image build and running container with port 8501 published to localhost.*
+
+![AI Log Anomaly Detector dashboard running locally in Docker](img/docker-local-dashboard.jpg)
+
+*Local dashboard at localhost:8501 after analyzing sample logs.*
 
 ## Quick start
 

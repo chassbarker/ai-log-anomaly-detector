@@ -1,0 +1,52 @@
+name: Docker smoke test
+on:
+  push:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - requirements.txt
+      - detect.py
+      - streamlit_app.py
+      - sample_logs.txt
+      - .github/workflows/docker.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - requirements.txt
+      - detect.py
+      - streamlit_app.py
+      - sample_logs.txt
+      - .github/workflows/docker.yml
+permissions:
+  contents: read
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build runtime image
+        run: docker build -t log-anomaly-detector:test .
+      - name: Verify sample detection and exports inside the image
+        run: |
+          docker run --rm log-anomaly-detector:test python detect.py --output /tmp/anomalies.csv --summary /tmp/summary.json
+      - name: Start dashboard and check readiness
+        shell: bash
+        run: |
+          docker run -d --name anomaly-dashboard -p 127.0.0.1:8501:8501 log-anomaly-detector:test
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8501/_stcore/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Dashboard did not become ready"
+          exit 1
+      - name: Show container logs and clean up
+        if: always()
+        run: |
+          docker logs anomaly-dashboard || true
+          docker rm -f anomaly-dashboard || true
